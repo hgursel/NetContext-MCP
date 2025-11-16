@@ -24,8 +24,8 @@
     "network-documentation",
     "command-bundles"
   ],
-  "author": "Hakan",
-  "license": "MIT",
+  "author": "NetContext MCP Contributors",
+  "license": "GPL-3.0",
   "dependencies": {
     "@modelcontextprotocol/sdk": "^1.0.0",
     "js-yaml": "^4.1.0"

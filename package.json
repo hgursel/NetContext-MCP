@@ -32,11 +32,11 @@
     "procurve",
     "network-engineering"
   ],
-  "author": "Hakan",
-  "license": "MIT",
+  "author": "NetContext MCP Contributors",
+  "license": "GPL-3.0",
   "repository": {
     "type": "git",
-    "url": "https://github.com/yourusername/netcontext-mcp.git"
+    "url": "https://github.com/hgursel/NetContext-MCP.git"
   },
   "engines": {
     "node": ">=18.0.0"

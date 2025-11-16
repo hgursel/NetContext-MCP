@@ -2,9 +2,9 @@
 
 **AI-powered network automation** through Model Context Protocol servers for documentation and device execution.
 
-[![CI](https://github.com/hgursel/netcontext-mcp/actions/workflows/ci.yml/badge.svg)](https://github.com/yourusername/netcontext-mcp/actions)
+[![CI](https://github.com/hgursel/NetContext-MCP/actions/workflows/ci.yml/badge.svg)](https://github.com/hgursel/NetContext-MCP/actions)
 [![npm](https://img.shields.io/npm/v/@netcontext/docs-mcp)](https://www.npmjs.com/package/@netcontext/docs-mcp)
-[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+[![License: GPL v3](https://img.shields.io/badge/License-GPLv3-blue.svg)](https://www.gnu.org/licenses/gpl-3.0)
 
 ---
 

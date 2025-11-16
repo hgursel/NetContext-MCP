@@ -56,21 +56,21 @@ Open `~/.claude.json` and update:
       "type": "stdio",
       "command": "node",
       "args": [
-        "/Users/hakan/netcontext-mcp/packages/docs-mcp/dist/index.js"
+        "/path/to/netcontext-mcp/packages/docs-mcp/dist/index.js"
       ],
       "env": {
-        "NETCONTEXT_REPO_PATH": "/Users/hakan/netcontext-mcp"
+        "NETCONTEXT_REPO_PATH": "/path/to/netcontext-mcp"
       }
     },
     "netcontext-network": {
       "type": "stdio",
       "command": "node",
       "args": [
-        "/Users/hakan/netcontext-mcp/packages/network-mcp/dist/index.js"
+        "/path/to/netcontext-mcp/packages/network-mcp/dist/index.js"
       ],
       "env": {
         "DEVICE_USERNAME": "admin",
-        "DEVICE_PRIVATE_KEY": "/Users/hakan/.ssh/id_rsa"
+        "DEVICE_PRIVATE_KEY": "/path/to/.ssh/id_rsa"
       }
     }
   }
@@ -310,7 +310,7 @@ write memory
     "netcontext-network": {
       "env": {
         "DEVICE_USERNAME": "admin",
-        "DEVICE_PRIVATE_KEY": "/Users/hakan/.ssh/netcontext_rsa"
+        "DEVICE_PRIVATE_KEY": "/path/to/.ssh/netcontext_rsa"
       }
     }
   }
@@ -326,13 +326,13 @@ write memory
 **macOS/Linux** (add to `~/.bashrc` or `~/.zshrc`):
 ```bash
 export DEVICE_USERNAME=admin
-export DEVICE_PRIVATE_KEY=/Users/hakan/.ssh/netcontext_rsa
+export DEVICE_PRIVATE_KEY=/path/to/.ssh/netcontext_rsa
 ```
 
 **Windows** (PowerShell):
 ```powershell
 [Environment]::SetEnvironmentVariable("DEVICE_USERNAME", "admin", "User")
-[Environment]::SetEnvironmentVariable("DEVICE_PRIVATE_KEY", "C:\Users\hakan\.ssh\netcontext_rsa", "User")
+[Environment]::SetEnvironmentVariable("DEVICE_PRIVATE_KEY", "C:\Users\YourUsername\.ssh\netcontext_rsa", "User")
 ```
 
 #### 2. Simplify Claude Code Configuration
