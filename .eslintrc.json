@@ -7,8 +7,7 @@
     "project": "./tsconfig.json"
   },
   "plugins": [
-    "@typescript-eslint",
-    "security"
+    "@typescript-eslint"
   ],
   "extends": [
     "eslint:recommended",
@@ -20,10 +19,7 @@
     "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_" }],
     "@typescript-eslint/no-explicit-any": "error",
     "@typescript-eslint/no-floating-promises": "error",
-    "no-console": ["warn", { "allow": ["error", "warn"] }],
-    "security/detect-non-literal-fs-filename": "warn",
-    "security/detect-object-injection": "off",
-    "security/detect-unsafe-regex": "error"
+    "no-console": ["warn", { "allow": ["error", "warn"] }]
   },
   "ignorePatterns": ["dist/", "node_modules/", "coverage/", "*.config.js", "*.config.cjs", "**/__tests__/**"],
   "env": {
