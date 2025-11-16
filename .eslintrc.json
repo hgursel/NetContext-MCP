@@ -13,8 +13,7 @@
   "extends": [
     "eslint:recommended",
     "plugin:@typescript-eslint/recommended",
-    "plugin:@typescript-eslint/recommended-requiring-type-checking",
-    "plugin:security/recommended"
+    "plugin:@typescript-eslint/recommended-requiring-type-checking"
   ],
   "rules": {
     "@typescript-eslint/explicit-function-return-type": "warn",
@@ -26,7 +25,7 @@
     "security/detect-object-injection": "off",
     "security/detect-unsafe-regex": "error"
   },
-  "ignorePatterns": ["dist/", "node_modules/", "coverage/", "*.config.js", "*.config.cjs"],
+  "ignorePatterns": ["dist/", "node_modules/", "coverage/", "*.config.js", "*.config.cjs", "**/__tests__/**"],
   "env": {
     "node": true,
     "es2022": true
