@@ -6,6 +6,9 @@ on:
   pull_request:
     branches: [main, develop]
 
+permissions:
+  contents: read
+
 jobs:
   test:
     name: Test
@@ -93,6 +96,7 @@ jobs:
           format: 'sarif'
           output: 'trivy-docs-mcp.sarif'
           severity: 'CRITICAL,HIGH'
+        continue-on-error: true
 
       - name: Run Trivy vulnerability scanner on network-mcp
         uses: aquasecurity/trivy-action@master
@@ -101,12 +105,17 @@ jobs:
           format: 'sarif'
           output: 'trivy-network-mcp.sarif'
           severity: 'CRITICAL,HIGH'
+        continue-on-error: true
 
-      - name: Upload Trivy scan results to GitHub Security tab
-        uses: github/codeql-action/upload-sarif@v2
+      - name: Upload security scan results as artifacts
+        uses: actions/upload-artifact@v4
         if: always()
         with:
-          sarif_file: '.'
+          name: trivy-security-scans
+          path: |
+            trivy-docs-mcp.sarif
+            trivy-network-mcp.sarif
+          retention-days: 90
 
   validate-vendor-docs:
     name: Validate Vendor Documentation

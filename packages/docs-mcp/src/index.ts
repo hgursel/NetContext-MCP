@@ -58,8 +58,7 @@ const TOOLS: Tool[] = [
   },
   {
     name: "list_vendors",
-    description:
-      "List all available vendors in the NetContext documentation repository.",
+    description: "List all available vendors in the NetContext documentation repository.",
     inputSchema: {
       type: "object",
       properties: {},
@@ -81,8 +80,7 @@ const TOOLS: Tool[] = [
   },
   {
     name: "get_baseline_config",
-    description:
-      "Retrieve baseline configuration documentation for a specific vendor and role.",
+    description: "Retrieve baseline configuration documentation for a specific vendor and role.",
     inputSchema: {
       type: "object",
       properties: {
@@ -92,8 +90,7 @@ const TOOLS: Tool[] = [
         },
         role: {
           type: "string",
-          description:
-            "Device role (e.g., 'access', 'distribution', 'core', 'security-hardening')",
+          description: "Device role (e.g., 'access', 'distribution', 'core', 'security-hardening')",
         },
       },
       required: ["vendor", "role"],
@@ -101,8 +98,7 @@ const TOOLS: Tool[] = [
   },
   {
     name: "search_commands",
-    description:
-      "Search for commands across all vendors that match a specific pattern or keyword.",
+    description: "Search for commands across all vendors that match a specific pattern or keyword.",
     inputSchema: {
       type: "object",
       properties: {
@@ -131,10 +127,7 @@ async function listVendors(): Promise<string[]> {
   }
 }
 
-async function getCommandBundle(
-  vendor: string,
-  bundleName: string
-): Promise<CommandBundle | null> {
+async function getCommandBundle(vendor: string, bundleName: string): Promise<CommandBundle | null> {
   try {
     // Validate vendor name to prevent path traversal
     if (!vendor.match(/^[a-z0-9-]+$/)) {
@@ -183,10 +176,7 @@ async function listBundles(vendor: string): Promise<string[]> {
   }
 }
 
-async function getBaselineConfig(
-  vendor: string,
-  role: string
-): Promise<BaselineConfig | null> {
+async function getBaselineConfig(vendor: string, role: string): Promise<BaselineConfig | null> {
   try {
     // Validate vendor and role names to prevent path traversal
     if (!vendor.match(/^[a-z0-9-]+$/)) {
@@ -265,7 +255,7 @@ const server = new Server(
 );
 
 // Tool handlers
-server.setRequestHandler(ListToolsRequestSchema, async () => {
+server.setRequestHandler(ListToolsRequestSchema, (): { tools: typeof TOOLS } => {
   return {
     tools: TOOLS,
   };
@@ -379,7 +369,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 });
 
 // Start server
-async function main() {
+async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error("NetContext Docs MCP server running on stdio");
