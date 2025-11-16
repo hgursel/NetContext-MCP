@@ -1,0 +1,48 @@
+{
+  "mcpServers": {
+    "netcontext-docs": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "/path/to/netcontext-mcp/packages/docs-mcp/dist/index.js"
+      ],
+      "env": {
+        "NETCONTEXT_REPO_PATH": "/path/to/netcontext-mcp"
+      },
+      "description": "NetContext documentation and command bundle server"
+    },
+    "netcontext-network": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "/path/to/netcontext-mcp/packages/network-mcp/dist/index.js"
+      ],
+      "env": {
+        "DEVICE_USERNAME": "admin",
+        "DEVICE_PASSWORD": "your-device-password",
+        "DEVICE_PORT": "22",
+        "SSH_TIMEOUT": "10000"
+      },
+      "description": "NetContext network device execution server"
+    }
+  },
+  "// INSTALLATION INSTRUCTIONS": {
+    "step1": "Build the MCP servers: cd /path/to/netcontext-mcp && npm install && npm run build",
+    "step2": "Copy this file to ~/.claude.json (macOS/Linux) or %USERPROFILE%\\.claude.json (Windows)",
+    "step3": "Update the 'args' paths to match your installation location",
+    "step4": "Update DEVICE_USERNAME and DEVICE_PASSWORD with your credentials",
+    "step5": "Restart Claude Code to load the MCP servers",
+    "step6": "Verify with: Tools → MCP Servers → should show 'netcontext-docs' and 'netcontext-network'"
+  },
+  "// SECURITY NOTES": {
+    "password_security": "IMPORTANT: Store device passwords securely. Consider using SSH keys instead of passwords.",
+    "alternative_auth": "For SSH key auth, add 'DEVICE_PRIVATE_KEY': '/path/to/id_rsa' instead of DEVICE_PASSWORD",
+    "environment_variables": "For better security, use system environment variables instead of hardcoding credentials"
+  },
+  "// USAGE EXAMPLES": {
+    "list_vendors": "Ask Claude: 'List available network vendors'",
+    "get_bundle": "Ask Claude: 'Get the health_check bundle for hp-aruba-procurve'",
+    "execute_commands": "Ask Claude: 'Execute health check on device 192.168.1.10'",
+    "baseline_config": "Ask Claude: 'Show me the baseline access switch configuration for HP Aruba'"
+  }
+}

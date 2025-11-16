@@ -1,0 +1,293 @@
+{
+  "auto_close": true,
+  "auto_open": false,
+  "auto_start": false,
+  "drawing_grid_size": 25,
+  "grid_size": 75,
+  "name": "NetContext Test Lab",
+  "project_id": "netcontext-test-lab-001",
+  "revision": 9,
+  "scene_height": 1000,
+  "scene_width": 2000,
+  "show_grid": true,
+  "show_interface_labels": true,
+  "show_layers": false,
+  "snap_to_grid": true,
+  "supplier": null,
+  "topology": {
+    "computes": [],
+    "drawings": [
+      {
+        "drawing_id": "drawing-1",
+        "locked": false,
+        "rotation": 0,
+        "svg": "<text font-family=\"TypeWriter\" font-size=\"10\" font-weight=\"bold\" fill=\"#000000\">NetContext MCP Test Topology</text>",
+        "x": 50,
+        "y": 20,
+        "z": 2
+      },
+      {
+        "drawing_id": "drawing-2",
+        "locked": false,
+        "rotation": 0,
+        "svg": "<text font-family=\"TypeWriter\" font-size=\"8\" fill=\"#666666\">Management Network: 192.168.1.0/24</text>",
+        "x": 50,
+        "y": 50,
+        "z": 2
+      }
+    ],
+    "links": [
+      {
+        "filters": {},
+        "link_id": "link-1",
+        "link_style": {},
+        "nodes": [
+          {
+            "adapter_number": 0,
+            "label": {
+              "rotation": 0,
+              "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+              "text": "e0",
+              "x": 72,
+              "y": -10
+            },
+            "node_id": "mgmt-pc",
+            "port_number": 0
+          },
+          {
+            "adapter_number": 0,
+            "label": {
+              "rotation": 0,
+              "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+              "text": "1",
+              "x": -10,
+              "y": 20
+            },
+            "node_id": "access-sw1",
+            "port_number": 0
+          }
+        ],
+        "suspend": false
+      },
+      {
+        "filters": {},
+        "link_id": "link-2",
+        "link_style": {},
+        "nodes": [
+          {
+            "adapter_number": 0,
+            "label": {
+              "rotation": 0,
+              "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+              "text": "48",
+              "x": 72,
+              "y": 20
+            },
+            "node_id": "access-sw1",
+            "port_number": 47
+          },
+          {
+            "adapter_number": 0,
+            "label": {
+              "rotation": 0,
+              "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+              "text": "10",
+              "x": -10,
+              "y": 20
+            },
+            "node_id": "dist-sw1",
+            "port_number": 9
+          }
+        ],
+        "suspend": false
+      }
+    ],
+    "nodes": [
+      {
+        "compute_id": "local",
+        "console": 5000,
+        "console_auto_start": false,
+        "console_type": "telnet",
+        "custom_adapters": [],
+        "first_port_name": null,
+        "height": 45,
+        "label": {
+          "rotation": 0,
+          "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+          "text": "Management PC",
+          "x": -20,
+          "y": -25
+        },
+        "locked": false,
+        "name": "Management-PC",
+        "node_id": "mgmt-pc",
+        "node_type": "vpcs",
+        "port_name_format": "Ethernet{0}",
+        "port_segment_size": 0,
+        "properties": {
+          "startup_script": "ip 192.168.1.100/24 192.168.1.1\nset pcname Management-PC\nsave"
+        },
+        "symbol": ":/symbols/vpcs_guest.svg",
+        "template_id": "vpcs-template",
+        "width": 65,
+        "x": 100,
+        "y": 300,
+        "z": 1
+      },
+      {
+        "compute_id": "local",
+        "console": 5001,
+        "console_auto_start": false,
+        "console_type": "telnet",
+        "custom_adapters": [],
+        "first_port_name": "1",
+        "height": 45,
+        "label": {
+          "rotation": 0,
+          "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+          "text": "ACCESS-SW1\n192.168.1.10",
+          "x": -15,
+          "y": -35
+        },
+        "locked": false,
+        "name": "ACCESS-SW1",
+        "node_id": "access-sw1",
+        "node_type": "qemu",
+        "port_name_format": "{port1}",
+        "port_segment_size": 0,
+        "properties": {
+          "adapter_type": "e1000",
+          "adapters": 10,
+          "bios_image": "",
+          "bios_image_md5sum": null,
+          "boot_priority": "c",
+          "cdrom_image": "",
+          "cdrom_image_md5sum": null,
+          "cpu_throttling": 0,
+          "cpus": 2,
+          "create_config_disk": false,
+          "hda_disk_image": "arubaoscx-simulator.qcow2",
+          "hda_disk_interface": "virtio",
+          "hdb_disk_image": "",
+          "hdb_disk_interface": "none",
+          "hdc_disk_image": "",
+          "hdc_disk_interface": "none",
+          "hdd_disk_image": "",
+          "hdd_disk_interface": "none",
+          "initrd": "",
+          "initrd_md5sum": null,
+          "kernel_command_line": "",
+          "kernel_image": "",
+          "kernel_image_md5sum": null,
+          "legacy_networking": false,
+          "linked_clone": true,
+          "mac_address": "0c:64:a8:00:00:01",
+          "on_close": "power_off",
+          "options": "-nographic",
+          "platform": "x86_64",
+          "process_priority": "normal",
+          "qemu_path": "/usr/bin/qemu-system-x86_64",
+          "ram": 4096,
+          "replicate_network_connection_state": true,
+          "usage": "Default credentials: admin/admin. SSH enabled on management interface."
+        },
+        "symbol": ":/symbols/multilayer_switch.svg",
+        "template_id": "aruba-aoscx-template",
+        "width": 51,
+        "x": 300,
+        "y": 300,
+        "z": 1
+      },
+      {
+        "compute_id": "local",
+        "console": 5002,
+        "console_auto_start": false,
+        "console_type": "telnet",
+        "custom_adapters": [],
+        "first_port_name": "1",
+        "height": 45,
+        "label": {
+          "rotation": 0,
+          "style": "font-family: TypeWriter;font-size: 10.0;font-weight: bold;fill: #000000;fill-opacity: 1.0;",
+          "text": "DIST-SW1\n192.168.1.1",
+          "x": -10,
+          "y": -35
+        },
+        "locked": false,
+        "name": "DIST-SW1",
+        "node_id": "dist-sw1",
+        "node_type": "qemu",
+        "port_name_format": "{port1}",
+        "port_segment_size": 0,
+        "properties": {
+          "adapter_type": "e1000",
+          "adapters": 12,
+          "bios_image": "",
+          "bios_image_md5sum": null,
+          "boot_priority": "c",
+          "cdrom_image": "",
+          "cdrom_image_md5sum": null,
+          "cpu_throttling": 0,
+          "cpus": 2,
+          "create_config_disk": false,
+          "hda_disk_image": "arubaoscx-simulator.qcow2",
+          "hda_disk_interface": "virtio",
+          "hdb_disk_image": "",
+          "hdb_disk_interface": "none",
+          "hdc_disk_image": "",
+          "hdc_disk_interface": "none",
+          "hdd_disk_image": "",
+          "hdd_disk_interface": "none",
+          "initrd": "",
+          "initrd_md5sum": null,
+          "kernel_command_line": "",
+          "kernel_image": "",
+          "kernel_image_md5sum": null,
+          "legacy_networking": false,
+          "linked_clone": true,
+          "mac_address": "0c:64:a8:00:00:02",
+          "on_close": "power_off",
+          "options": "-nographic",
+          "platform": "x86_64",
+          "process_priority": "normal",
+          "qemu_path": "/usr/bin/qemu-system-x86_64",
+          "ram": 4096,
+          "replicate_network_connection_state": true,
+          "usage": "Default credentials: admin/admin. Configure as distribution layer switch."
+        },
+        "symbol": ":/symbols/multilayer_switch.svg",
+        "template_id": "aruba-aoscx-template",
+        "width": 51,
+        "x": 500,
+        "y": 150,
+        "z": 1
+      }
+    ]
+  },
+  "type": "topology",
+  "variables": null,
+  "version": "2.2.43",
+  "zoom": 100,
+  "__comment": [
+    "This is a GNS3 topology file for testing NetContext MCP servers.",
+    "Prerequisites:",
+    "  1. GNS3 installed (version 2.2.x or later)",
+    "  2. Aruba AOS-CX simulator image (arubaoscx-simulator.qcow2)",
+    "  3. QEMU/KVM support enabled",
+    "",
+    "Setup Instructions:",
+    "  1. Import this topology into GNS3: File → Import portable project → select this file",
+    "  2. Configure switch management IPs:",
+    "     ACCESS-SW1: 192.168.1.10/24",
+    "     DIST-SW1: 192.168.1.1/24",
+    "  3. Start all nodes",
+    "  4. SSH from Management-PC: ssh admin@192.168.1.10",
+    "  5. Test NetContext MCP commands from Claude Code/Cursor",
+    "",
+    "Test Commands:",
+    "  - List vendors",
+    "  - Get health_check bundle for hp-aruba-procurve",
+    "  - Execute commands on 192.168.1.10",
+    "  - Get baseline access configuration"
+  ]
+}

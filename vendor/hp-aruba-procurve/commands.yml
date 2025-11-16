@@ -1,0 +1,87 @@
+vendor: hp-aruba-procurve
+platform_notes: |
+  Supports HP ProCurve 2530/2920/2930F/2930M/3810M series
+  and Aruba 5400R/6200/6300 series running ArubaOS-Switch.
+  Commands tested on ArubaOS-Switch 16.x firmware.
+
+bundles:
+  health_check:
+    description: "Basic interface, VLAN, and system health - run weekly on access switches"
+    last_updated: "2025-11-15"
+    commands:
+      - show system                    # System info, uptime, CPU, memory
+      - show version                   # Software/hardware version
+      - show interfaces brief          # Interface status overview
+      - show vlan                      # VLAN configuration
+      - show vlan ports all-ports      # Port-to-VLAN assignments
+      - show lldp info remote-device   # LLDP neighbor discovery
+      - show spanning-tree             # STP status and topology
+      - show trunks                    # Trunk configuration
+      - show power-over-ethernet brief # PoE status (if applicable)
+      - show system temperature        # Temperature monitoring
+
+  security_audit:
+    description: "Security configuration audit - run monthly for compliance"
+    last_updated: "2025-11-15"
+    commands:
+      - show running-config            # Full running configuration
+      - show authentication            # Authentication configuration
+      - show ip ssh                    # SSH configuration and status
+      - show management                # Management interface config
+      - show authorized-ip             # Authorized IP addresses
+      - show snmpv3                    # SNMPv3 configuration
+      - show access-list               # ACL configuration
+      - show port-access               # 802.1X port authentication
+      - show password-policy           # Password complexity settings
+      - show aaa server-group          # AAA server configuration
+
+  vlan_troubleshooting:
+    description: "VLAN connectivity and configuration troubleshooting"
+    last_updated: "2025-11-15"
+    commands:
+      - show vlan                      # VLAN database
+      - show vlan ports all-ports      # Port VLAN assignments
+      - show interfaces brief          # Interface status
+      - show mac-address               # MAC address table
+      - show spanning-tree             # STP state and root
+      - show spanning-tree detail      # Detailed STP port states
+      - show trunks                    # Trunk link status
+      - show lacp                      # LACP aggregation status
+      - show lldp info remote-device   # Neighbor discovery
+
+  baseline_config:
+    description: "Baseline configuration commands for new switch deployment"
+    last_updated: "2025-11-15"
+    commands:
+      - hostname ${HOSTNAME}                          # Set hostname
+      - time timezone -5                              # Set timezone (example: EST)
+      - sntp server ${NTP_SERVER}                     # Configure NTP
+      - sntp enable                                   # Enable SNTP
+      - ip default-gateway ${GATEWAY_IP}              # Set default gateway
+      - vlan 1 name "Management"                      # Configure management VLAN
+      - interface vlan 1                              # Enter VLAN 1 config
+      - ip address ${MGMT_IP} ${MGMT_MASK}            # Set management IP
+      - management-vlan 1                             # Set management VLAN
+      - password manager user-name admin plaintext ${ADMIN_PASSWORD}  # Set admin password
+      - password complexity enable                    # Enable password complexity
+      - password minimum-length 12                    # Set minimum password length
+      - ip ssh version 2                              # Enable SSHv2 only
+      - no telnet-server                              # Disable Telnet
+      - logging ${SYSLOG_SERVER}                      # Configure syslog
+      - snmp-server community ${SNMP_RO} restricted   # SNMP read-only
+      - write memory                                  # Save configuration
+
+  performance_monitoring:
+    description: "Performance metrics and resource utilization monitoring"
+    last_updated: "2025-11-15"
+    commands:
+      - show system                    # CPU, memory, uptime
+      - show interfaces brief          # Interface status and errors
+      - show interfaces                # Detailed interface statistics
+      - show system temperature        # Temperature sensors
+      - show power-over-ethernet brief # PoE power consumption
+      - show cpu                       # CPU utilization
+      - show memory                    # Memory usage
+      - show processes                 # Running processes
+      - show buffers                   # Buffer utilization
+      - show logging -r                # Recent log messages

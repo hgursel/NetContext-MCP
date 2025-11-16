@@ -1,0 +1,26 @@
+{
+  "mcpServers": {
+    "netcontext-docs": {
+      "command": "node",
+      "args": [
+        "/path/to/netcontext-mcp/packages/docs-mcp/dist/index.js"
+      ],
+      "env": {
+        "NETCONTEXT_REPO_PATH": "/path/to/netcontext-mcp"
+      }
+    },
+    "netcontext-network": {
+      "command": "node",
+      "args": [
+        "/path/to/netcontext-mcp/packages/network-mcp/dist/index.js"
+      ],
+      "env": {
+        "DEVICE_USERNAME": "admin",
+        "DEVICE_PASSWORD": "your-device-password",
+        "DEVICE_PORT": "22",
+        "SSH_TIMEOUT": "10000"
+      }
+    }
+  },
+  "_comment": "Cursor MCP Configuration for NetContext - See claude-code-config.json for detailed setup instructions and security notes"
+}

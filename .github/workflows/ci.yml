@@ -1,0 +1,171 @@
+name: CI
+
+on:
+  push:
+    branches: [main, develop]
+  pull_request:
+    branches: [main, develop]
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        node-version: [18.x, 20.x]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+          cache: 'npm'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Lint code
+        run: npm run lint
+
+      - name: Check code formatting
+        run: npm run format:check
+
+      - name: Run tests with coverage
+        run: npm run test:coverage
+
+      - name: Upload coverage to Codecov
+        uses: codecov/codecov-action@v3
+        with:
+          files: ./packages/*/coverage/lcov.info
+          flags: unittests
+          name: codecov-umbrella
+          fail_ci_if_error: false
+
+      - name: Build packages
+        run: npm run build
+
+      - name: Check build artifacts
+        run: |
+          test -f packages/docs-mcp/dist/index.js
+          test -f packages/network-mcp/dist/index.js
+
+  docker-build-and-scan:
+    name: Docker Build and Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build docs-mcp image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./packages/docs-mcp/Dockerfile
+          push: false
+          load: true
+          tags: netcontext/docs-mcp:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Build network-mcp image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          file: ./packages/network-mcp/Dockerfile
+          push: false
+          load: true
+          tags: netcontext/network-mcp:latest
+          cache-from: type=gha
+          cache-to: type=gha,mode=max
+
+      - name: Run Trivy vulnerability scanner on docs-mcp
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: netcontext/docs-mcp:latest
+          format: 'sarif'
+          output: 'trivy-docs-mcp.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Run Trivy vulnerability scanner on network-mcp
+        uses: aquasecurity/trivy-action@master
+        with:
+          image-ref: netcontext/network-mcp:latest
+          format: 'sarif'
+          output: 'trivy-network-mcp.sarif'
+          severity: 'CRITICAL,HIGH'
+
+      - name: Upload Trivy scan results to GitHub Security tab
+        uses: github/codeql-action/upload-sarif@v2
+        if: always()
+        with:
+          sarif_file: '.'
+
+  validate-vendor-docs:
+    name: Validate Vendor Documentation
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install YAML validator
+        run: npm install -g js-yaml
+
+      - name: Validate commands.yml
+        run: |
+          for file in vendor/*/commands.yml; do
+            echo "Validating $file"
+            js-yaml "$file" > /dev/null || exit 1
+          done
+
+      - name: Check baseline documentation
+        run: |
+          for dir in vendor/*/; do
+            vendor=$(basename "$dir")
+            echo "Checking vendor: $vendor"
+            test -f "$dir/commands.yml" || { echo "Missing commands.yml for $vendor"; exit 1; }
+            test -f "$dir/baseline-access.md" || { echo "Missing baseline-access.md for $vendor"; exit 1; }
+            test -f "$dir/security-hardening.md" || { echo "Missing security-hardening.md for $vendor"; exit 1; }
+          done
+
+  security-scan:
+    name: Security Scan
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20.x'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Run npm audit
+        run: npm audit --audit-level=high
+        continue-on-error: false
+
+      - name: Run Snyk security scan
+        uses: snyk/actions/node@master
+        continue-on-error: false
+        env:
+          SNYK_TOKEN: ${{ secrets.SNYK_TOKEN }}
+        with:
+          args: --severity-threshold=high
+        if: env.SNYK_TOKEN != ''

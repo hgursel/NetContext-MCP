@@ -1,0 +1,56 @@
+version: '3.8'
+
+services:
+  # Docs MCP Server
+  docs-mcp:
+    build:
+      context: .
+      dockerfile: packages/docs-mcp/Dockerfile
+    container_name: netcontext-docs-mcp
+    restart: unless-stopped
+    environment:
+      - NETCONTEXT_REPO_PATH=/app
+      - NODE_ENV=production
+    volumes:
+      # Mount vendor documentation for updates without rebuild
+      - ./vendor:/app/vendor:ro
+    stdin_open: true
+    tty: true
+    networks:
+      - netcontext-network
+    labels:
+      - "com.netcontext.service=docs-mcp"
+      - "com.netcontext.version=0.1.0"
+
+  # Network MCP Server
+  network-mcp:
+    build:
+      context: .
+      dockerfile: packages/network-mcp/Dockerfile
+    container_name: netcontext-network-mcp
+    restart: unless-stopped
+    environment:
+      - DEVICE_USERNAME=${DEVICE_USERNAME:-admin}
+      - DEVICE_PASSWORD=${DEVICE_PASSWORD:-}
+      - DEVICE_PORT=${DEVICE_PORT:-22}
+      - SSH_TIMEOUT=${SSH_TIMEOUT:-10000}
+      - SSH_VERIFY_HOST_KEY=${SSH_VERIFY_HOST_KEY:-false}
+      - NODE_ENV=production
+    volumes:
+      # Mount SSH keys for authentication
+      - ${SSH_KEY_PATH:-~/.ssh}:/home/mcp/.ssh:ro
+    stdin_open: true
+    tty: true
+    networks:
+      - netcontext-network
+    # Only start if SSH keys are available
+    depends_on:
+      - docs-mcp
+    labels:
+      - "com.netcontext.service=network-mcp"
+      - "com.netcontext.version=0.1.0"
+
+networks:
+  netcontext-network:
+    driver: bridge
+    name: netcontext-network

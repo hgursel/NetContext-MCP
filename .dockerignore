@@ -1,0 +1,71 @@
+# Node.js
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+package-lock.json
+
+# Build artifacts
+dist/
+*.tsbuildinfo
+coverage/
+
+# Tests
+**/__tests__/
+**/*.test.ts
+**/*.spec.ts
+jest.config.*
+
+# Development files
+.env
+.env.*
+!.env.example
+
+# Git
+.git/
+.gitignore
+.github/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# Documentation (keep only essential)
+docs/
+*.md
+!README.md
+
+# Examples and configs (not needed in container)
+examples/
+.prettierrc
+.eslintrc.json
+.nvmrc
+
+# CI/CD
+.github/
+
+# macOS
+.DS_Store
+
+# Logs
+logs/
+*.log
+
+# Temporary files
+tmp/
+temp/
+*.tmp
+
+# GNS3 files (not needed in container)
+*.gns3
+*.gns3project
+
+# Credentials and sensitive data
+credentials/
+*.pem
+*.key
+id_rsa*
+!.ssh/config.example
