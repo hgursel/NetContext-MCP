@@ -18,11 +18,11 @@ const VERIFY_HOST_KEY = process.env.SSH_VERIFY_HOST_KEY !== "false"; // Default 
 
 // Command sanitization patterns
 const DANGEROUS_PATTERNS = [
-  /\b(rm|del|format|erase)\b/i,  // Destructive commands (standalone)
-  /\bwrite\s+erase\b/i,  // Write erase command
-  /&&|;|\||`|\$\(/,  // Command chaining
-  /\.\.\//,  // Path traversal
-  /<|>/,  // Redirection
+  /\b(rm|del|format|erase)\b/i, // Destructive commands (standalone)
+  /\bwrite\s+erase\b/i, // Write erase command
+  /&&|;|\||`|\$\(/, // Command chaining
+  /\.\.\//, // Path traversal
+  /<|>/, // Redirection
 ];
 
 /**
@@ -229,7 +229,7 @@ async function executeSSHCommands(
         privateKey: credentials.privateKey,
         readyTimeout: SSH_TIMEOUT,
         // Host key verification
-        hostVerifier: VERIFY_HOST_KEY ? undefined : () => true, // If verification disabled, accept all
+        hostVerifier: VERIFY_HOST_KEY ? undefined : (): boolean => true, // If verification disabled, accept all
       });
 
     // Timeout fallback
@@ -279,9 +279,7 @@ async function executeBatchDevices(
   username?: string,
   password?: string
 ): Promise<CommandExecutionResult[]> {
-  const executions = hosts.map((host) =>
-    executeSingleDevice(host, commands, username, password)
-  );
+  const executions = hosts.map((host) => executeSingleDevice(host, commands, username, password));
   return Promise.all(executions);
 }
 
@@ -299,7 +297,7 @@ const server = new Server(
 );
 
 // Tool handlers
-server.setRequestHandler(ListToolsRequestSchema, async () => {
+server.setRequestHandler(ListToolsRequestSchema, (): { tools: typeof TOOLS } => {
   return {
     tools: TOOLS,
   };
@@ -348,7 +346,8 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
           content: [
             {
               type: "text",
-              text: `To execute bundle '${bundle}' for vendor '${vendor}' on ${host}:\n\n` +
+              text:
+                `To execute bundle '${bundle}' for vendor '${vendor}' on ${host}:\n\n` +
                 `1. Use @netcontext/docs-mcp to retrieve the bundle:\n` +
                 `   get_command_bundle(vendor="${vendor}", bundle="${bundle}")\n\n` +
                 `2. Extract commands from the bundle response\n\n` +
@@ -411,7 +410,7 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
 });
 
 // Start server
-async function main() {
+async function main(): Promise<void> {
   const transport = new StdioServerTransport();
   await server.connect(transport);
   console.error("NetContext Network MCP server running on stdio");
