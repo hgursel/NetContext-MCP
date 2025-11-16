@@ -28,12 +28,12 @@ NetContext provides two specialized MCP servers that enable AI coding assistants
 
 ## Features
 
-✅ **AI-Native Workflow**: Ask Claude "Run a health check on switch 192.168.1.10" and it executes automatically
-✅ **Vendor Documentation**: Always up-to-date command bundles for HP/Aruba switches
-✅ **Secure Execution**: SSH key support, credential protection, timeout handling
-✅ **Batch Operations**: Execute commands on multiple devices in parallel
-✅ **Docker Support**: Multi-stage builds, production-ready containers, ~220MB images
-✅ **Production-Ready**: TypeScript, CI/CD, security scanning, comprehensive error handling
+**AI-Native Workflow**: Ask Claude "Run a health check on switch 192.168.1.10" and it executes automatically
+**Vendor Documentation**: Always up-to-date command bundles for HP/Aruba switches
+**Secure Execution**: SSH key support, credential protection, timeout handling
+**Batch Operations**: Execute commands on multiple devices in parallel
+**Docker Support**: Multi-stage builds, production-ready containers, ~220MB images
+**Production-Ready**: TypeScript, CI/CD, security scanning, comprehensive error handling
 
 ---
 
