@@ -1,0 +1,122 @@
+vendor: ubiquiti-unifi-dream-router
+platform_notes: |
+  Supports Ubiquiti UniFi Dream Router 7 (UDR7) running UniFi OS.
+  Commands tested on UniFi OS 4.x firmware.
+
+  Important: UniFi Dream Router is designed for web-based configuration.
+  SSH access is primarily for diagnostics and troubleshooting.
+  Most configuration changes should be done through the UniFi Network UI.
+  Changes made via CLI may be overwritten by the controller.
+
+bundles:
+  health_check:
+    description: "Basic system health, network status, and device monitoring - run weekly"
+    last_updated: "2025-11-17"
+    commands:
+      - info                              # Device information and firmware version
+      - uptime                            # System uptime and load
+      - ubnt-device-info summary          # Hardware and software summary
+      - ubnt-systool cputemp              # CPU temperature monitoring
+      - sensors                           # Temperature, fan speed, voltage
+      - ifconfig                          # Network interface configuration
+      - ifstat                            # Interface statistics
+      - netstat -rt -n                    # IP routing table
+      - ip route                          # Routing information
+      - arp -a                            # ARP table entries
+      - ip neigh                          # IPv6 neighbor information
+
+  system_monitoring:
+    description: "System resource utilization and performance monitoring"
+    last_updated: "2025-11-17"
+    commands:
+      - ubnt-systool cputemp              # CPU temperature
+      - ubnt-fan-speed                    # Fan speed status
+      - sensors                           # All sensor information
+      - uptime                            # System load and uptime
+      - free -h                           # Memory usage
+      - df -h                             # Disk space usage
+      - cat /var/log/messages             # System log messages
+      - dmesg | tail -50                  # Recent kernel messages
+      - ps aux | head -20                 # Top processes by CPU/memory
+
+  network_diagnostics:
+    description: "Network connectivity and interface troubleshooting"
+    last_updated: "2025-11-17"
+    commands:
+      - ifconfig                          # Interface configuration
+      - ifstat                            # Interface statistics
+      - ip addr show                      # IP address information
+      - ip route                          # Routing table
+      - netstat -rt -n                    # Routing table (alternative)
+      - netstat -plant                    # All listening ports
+      - arp -a                            # ARP cache
+      - ip neigh                          # Neighbor table (IPv4/IPv6)
+      - ping -c 4 ${TARGET_IP}            # Network connectivity test
+      - traceroute ${TARGET_IP}           # Network path tracing
+      - tcpdump -i ${INTERFACE} -c 50     # Packet capture (50 packets)
+
+  dhcp_monitoring:
+    description: "DHCP lease monitoring and client tracking"
+    last_updated: "2025-11-17"
+    commands:
+      - cat /mnt/data/udapi-config/dnsmasq.lease  # DHCP lease information
+      - grep -i dhcp /var/log/messages            # DHCP-related log entries
+      - netstat -plant | grep :67                 # DHCP server listener
+
+  wireless_status:
+    description: "WiFi 7 tri-band status and client information"
+    last_updated: "2025-11-17"
+    commands:
+      - ubnt-tools ubnt-discover          # Discover local Ubiquiti devices
+      - iw dev                            # Wireless device information
+      - iw dev wlan0 station dump         # Connected wireless clients (2.4GHz)
+      - iw dev wlan1 station dump         # Connected wireless clients (5GHz)
+      - iw dev wlan2 station dump         # Connected wireless clients (6GHz)
+
+  security_audit:
+    description: "Security configuration and access control audit"
+    last_updated: "2025-11-17"
+    commands:
+      - whoami                            # Current user
+      - cat /etc/passwd                   # User accounts
+      - netstat -plant                    # All listening services
+      - iptables -L -n -v                 # Firewall rules
+      - ip6tables -L -n -v                # IPv6 firewall rules
+      - cat /var/log/messages | grep -i auth  # Authentication logs
+      - last | head -20                   # Recent login history
+      - ps aux | grep ssh                 # SSH processes
+
+  vpn_ipsec_status:
+    description: "VPN and IPSec tunnel status monitoring"
+    last_updated: "2025-11-17"
+    commands:
+      - ipsec statusall                   # IPSec tunnel status
+      - ip tunnel show                    # Tunnel interfaces
+      - pppstats                          # PPP protocol statistics (if applicable)
+
+  unifi_os_management:
+    description: "UniFi OS container and service management"
+    last_updated: "2025-11-17"
+    commands:
+      - unifi-os shell                    # Access UniFi OS container
+      - /etc/init.d/S95unifios restart    # Restart UniFi OS web interface
+      - systemctl status unifi-core       # UniFi core service status (if systemd)
+
+  baseline_config:
+    description: "Basic initial configuration (Note: Most settings should be done via UI)"
+    last_updated: "2025-11-17"
+    commands:
+      - set-inform http://${CONTROLLER_IP}:8080/inform  # Configure controller adoption
+      - info                                             # Verify device information
+      - reboot                                           # Reboot device (after config)
+
+  firmware_management:
+    description: "Firmware upgrade and system maintenance"
+    last_updated: "2025-11-17"
+    commands:
+      - info                              # Current firmware version
+      - upgrade https://${FIRMWARE_URL}   # Upgrade firmware (URL method)
+      - fwupdate --url https://${FIRMWARE_URL}  # Alternative firmware update
+      - reboot                            # Reboot after firmware upgrade
+
+
