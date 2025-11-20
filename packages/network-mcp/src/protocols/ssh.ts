@@ -2,7 +2,7 @@
  * SSH protocol implementation
  */
 
-import { Client, ClientChannel } from "ssh2";
+import { Client, ClientChannel, ConnectConfig } from "ssh2";
 import {
   BaseProtocol,
   ConnectionError,
@@ -104,22 +104,7 @@ export class SSHProtocol extends BaseProtocol {
   /**
    * Build SSH connection configuration
    */
-  private buildSSHConfig(credentials: DeviceCredentials): {
-    host: string;
-    port: number;
-    username: string;
-    password?: string;
-    privateKey?: string | Buffer;
-    passphrase?: string;
-    agent?: string;
-    readyTimeout: number;
-    hostVerifier?: () => boolean;
-    algorithms?: {
-      kex?: string[];
-      serverHostKey?: string[];
-      cipher?: string[];
-    };
-  } {
+  private buildSSHConfig(credentials: DeviceCredentials): ConnectConfig {
     const config = {
       host: credentials.host,
       port: credentials.port || DEFAULT_PORT,
@@ -147,23 +132,7 @@ export class SSHProtocol extends BaseProtocol {
         cipher: ["aes128-gcm", "aes256-gcm", "aes128-ctr", "aes192-ctr", "aes256-ctr"],
       },
       tryKeyboard: true, // Enable keyboard-interactive for UniFi and similar devices
-    } as {
-      host: string;
-      port: number;
-      username: string;
-      password?: string;
-      privateKey?: string | Buffer;
-      passphrase?: string;
-      agent?: string;
-      readyTimeout: number;
-      hostVerifier?: () => boolean;
-      algorithms?: {
-        kex?: string[];
-        serverHostKey?: string[];
-        cipher?: string[];
-      };
-      tryKeyboard?: boolean;
-    };
+    } as ConnectConfig;
 
     switch (credentials.type) {
       case "password":

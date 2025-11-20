@@ -73,7 +73,9 @@ describe("SSHProtocol", () => {
     it("should sanitize commands before execution", async () => {
       // Mock connection
       (protocol as any).connected = true;
-      (protocol as any).client = {};
+      (protocol as any).client = {
+        end: jest.fn(),
+      };
 
       // Test dangerous command patterns
       const dangerousCommands = [
@@ -93,7 +95,9 @@ describe("SSHProtocol", () => {
 
     it("should reject empty commands", async () => {
       (protocol as any).connected = true;
-      (protocol as any).client = {};
+      (protocol as any).client = {
+        end: jest.fn(),
+      };
 
       await expect(protocol.execute([""])).rejects.toThrow("Empty command not allowed");
       await expect(protocol.execute(["   "])).rejects.toThrow("Empty command not allowed");
@@ -101,7 +105,9 @@ describe("SSHProtocol", () => {
 
     it("should reject commands exceeding maximum length", async () => {
       (protocol as any).connected = true;
-      (protocol as any).client = {};
+      (protocol as any).client = {
+        end: jest.fn(),
+      };
 
       const longCommand = "a".repeat(1001);
       await expect(protocol.execute([longCommand])).rejects.toThrow(
