@@ -191,11 +191,14 @@ export class SSHProtocol extends BaseProtocol {
         const handlePagination = (): void => {
           const lastOutput = output.slice(-200).toLowerCase();
           // Detect pagination prompts and send space to continue
+          // Supports HP/Aruba and Cisco pagination patterns
           if (
             lastOutput.includes("press any key to continue") ||
-            lastOutput.includes("--more--") ||
-            lastOutput.includes("-- more --") ||
-            lastOutput.includes("<--- more --->")
+            lastOutput.includes("--more--") || // Generic/Cisco
+            lastOutput.includes("-- more --") || // Aruba/HP/Cisco with spaces
+            lastOutput.includes("<--- more --->") || // HP variation
+            lastOutput.includes("--more--") || // Cisco compact
+            lastOutput.includes("-- more --") // Cisco with spaces
           ) {
             stream.write(" "); // Space to continue pagination
           }
@@ -205,8 +208,19 @@ export class SSHProtocol extends BaseProtocol {
           .on("close", () => {
             channelClosed = true;
             const duration = Date.now() - startTime;
+
+            // Check for Cisco-specific error patterns
+            const ciscoErrors = [
+              "% Invalid input detected",
+              "% Incomplete command",
+              "% Ambiguous command",
+              "% Unknown command",
+            ];
+
+            const hasError = ciscoErrors.some((errPattern) => output.includes(errPattern));
+
             resolve({
-              success: true,
+              success: !hasError,
               output,
               timestamp: new Date().toISOString(),
               duration,
@@ -224,8 +238,11 @@ export class SSHProtocol extends BaseProtocol {
               commandsSent = true;
               // Wait a bit for prompt to stabilize
               setTimeout(() => {
-                // Disable pagination if possible (device-specific)
-                stream.write("no page\n"); // HP/Aruba command to disable paging
+                // Disable pagination (multi-vendor support)
+                // Try both HP/Aruba and Cisco commands
+                stream.write("no page\n"); // HP/Aruba
+                stream.write("terminal length 0\n"); // Cisco
+                stream.write("terminal width 511\n"); // Cisco (prevent line wrapping)
 
                 setTimeout(() => {
                   // Send all commands

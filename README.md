@@ -27,14 +27,17 @@ NetContext provides an MCP server that enables AI assistants (Claude Desktop, LM
 
 | Vendor | Model | Authentication | Status |
 |--------|-------|---------------|--------|
+| **Cisco** | IOS/IOS-XE (Catalyst/ISR/ASR) | Password/Keys/Keyboard-int | ✅ Production |
 | **HP/Aruba** | ProCurve Switches (2530/2920) | Password | ✅ Production |
 | **Ubiquiti** | UniFi Dream Router | Keyboard-interactive | ✅ Production |
 | **Generic** | Linux/SSH servers | Password/Keys | ✅ Supported |
 
 **Key Capabilities**:
+- **Multi-Vendor Support**: Cisco, HP/Aruba, Ubiquiti, and generic SSH devices
 - **Legacy SSH Support**: Works with older network equipment (diffie-hellman-group14-sha1, ssh-rsa)
 - **Modern SSH Support**: Full support for current algorithms (curve25519-sha256, chacha20-poly1305)
 - **Device-Specific Handling**: Pagination, prompt detection, vendor-specific commands
+- **Error Detection**: Cisco-specific error pattern recognition and reporting
 
 ---
 
@@ -143,6 +146,33 @@ HP J9729A 2920-48G-POE+ Switch
 Software revision WB.16.02.0012
 Serial Number: CNXXXXXXXX
 ```
+
+### Cisco IOS/IOS-XE Router or Switch
+
+```
+Get device information from Cisco router at 192.168.1.1 with credentials admin/cisco123
+```
+
+**What happens**:
+1. MCP server connects via SSH (supports password, keyboard-interactive, or SSH keys)
+2. Automatically sends `terminal length 0` to disable pagination
+3. Executes `show version` command
+4. Detects Cisco error patterns if command fails
+
+**Example output**:
+```
+Cisco IOS Software, C2960X Software (C2960X-UNIVERSALK9-M), Version 15.2(7)E8
+Technical Support: http://www.cisco.com/techsupport
+System image file is "flash:c2960x-universalk9-mz.152-7.E8.bin"
+uptime is 45 weeks, 2 days, 3 hours, 15 minutes
+```
+
+**Available Command Bundles** (in `vendor/cisco-ios-iosxe/commands.yml`):
+- `health_check` - Basic system health (version, interfaces, CPU, memory)
+- `security_audit` - Security configuration review
+- `interface_troubleshooting` - Interface diagnostics
+- `vlan_troubleshooting` - VLAN configuration and connectivity (switches)
+- `routing_troubleshooting` - Routing table and protocols (routers)
 
 ### UniFi Dream Router
 
