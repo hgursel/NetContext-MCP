@@ -1,0 +1,242 @@
+vendor: cisco-ios-iosxe
+platform_notes: |
+  Supports Cisco IOS 12.x/15.x and IOS-XE 16.x/17.x platforms including
+  Catalyst switches (2960/3650/3850/9200/9300), ISR routers (1900/2900/4000),
+  ASR routers (1000/9000), and Nexus 9000 series (IOS-XE mode).
+  Commands tested on IOS 15.x and IOS-XE 16.x/17.x firmware.
+
+bundles:
+  health_check:
+    description: "Basic device, interface, and system health - run weekly on all devices"
+    last_updated: "2024-11-20"
+    commands:
+      - show version                   # Device model, IOS version, uptime, serial
+      - show ip interface brief        # Interface status and IP addresses
+      - show processes cpu sorted      # CPU utilization (top processes)
+      - show memory                    # Memory usage statistics
+      - show environment               # Temperature, power supply, fans
+      - show logging | include %       # Recent error messages only
+      - show ip route summary          # Routing table summary
+      - show cdp neighbors             # CDP neighbor discovery
+      - show inventory                 # Hardware inventory (UDI, PID, SN)
+
+  security_audit:
+    description: "Security configuration audit - run monthly for compliance"
+    last_updated: "2024-11-20"
+    commands:
+      - show running-config            # Full running configuration
+      - show users                     # Currently logged in users
+      - show line                      # VTY/Console line status
+      - show ip ssh                    # SSH configuration and status
+      - show access-lists              # ACL configurations
+      - show crypto key mypubkey rsa   # SSH RSA public key
+      - show aaa sessions              # AAA session information
+      - show privilege                 # Current privilege level
+      - show snmp                      # SNMP configuration
+      - show logging                   # System logs
+
+  interface_troubleshooting:
+    description: "Interface connectivity and performance troubleshooting"
+    last_updated: "2024-11-20"
+    commands:
+      - show ip interface brief        # Interface status overview
+      - show interfaces                # Detailed interface statistics
+      - show interfaces status         # Port status (switches)
+      - show vlan brief                # VLAN summary (switches)
+      - show mac address-table         # MAC address table (switches)
+      - show spanning-tree summary     # STP status (switches)
+      - show etherchannel summary      # Port-channel status
+      - show cdp neighbors detail      # Neighbor device details
+      - show lldp neighbors            # LLDP neighbor discovery
+
+  baseline_router:
+    description: "Baseline configuration commands for new router deployment"
+    last_updated: "2024-11-20"
+    commands:
+      - hostname ${HOSTNAME}                          # Set hostname
+      - ip domain-name ${DOMAIN}                      # Set domain name
+      - ntp server ${NTP_SERVER}                      # Configure NTP
+      - clock timezone ${TIMEZONE} ${UTC_OFFSET}      # Set timezone
+      - ip name-server ${DNS1} ${DNS2}                # Configure DNS
+      - username admin privilege 15 secret ${ADMIN_PASSWORD}  # Create admin user
+      - aaa new-model                                 # Enable AAA
+      - aaa authentication login default local        # Use local authentication
+      - crypto key generate rsa modulus 2048          # Generate SSH keys
+      - ip ssh version 2                              # Enable SSHv2 only
+      - ip ssh time-out 60                            # SSH timeout
+      - ip ssh authentication-retries 3               # SSH max retries
+      - no ip http server                             # Disable HTTP
+      - no ip http secure-server                      # Disable HTTPS (unless needed)
+      - line vty 0 4                                  # Configure VTY lines
+      - transport input ssh                           # SSH only
+      - exec-timeout 10 0                             # 10 minute timeout
+      - logging synchronous                           # Sync logging with CLI
+      - logging ${SYSLOG_SERVER}                      # Configure syslog
+      - service timestamps log datetime msec          # Timestamp logs
+      - service password-encryption                   # Encrypt passwords
+      - no ip source-route                            # Disable source routing
+      - no ip gratuitous-arps                         # Disable gratuitous ARP
+      - ip classless                                  # Enable classless routing
+      - end                                           # Exit config mode
+      - write memory                                  # Save configuration
+
+  baseline_switch:
+    description: "Baseline configuration commands for new switch deployment"
+    last_updated: "2024-11-20"
+    commands:
+      - hostname ${HOSTNAME}                          # Set hostname
+      - ip domain-name ${DOMAIN}                      # Set domain name
+      - ntp server ${NTP_SERVER}                      # Configure NTP
+      - clock timezone ${TIMEZONE} ${UTC_OFFSET}      # Set timezone
+      - vlan ${MGMT_VLAN}                             # Create management VLAN
+      - name Management                               # Name management VLAN
+      - exit                                          # Exit VLAN config
+      - interface vlan ${MGMT_VLAN}                   # Configure management SVI
+      - ip address ${MGMT_IP} ${MGMT_MASK}            # Set management IP
+      - no shutdown                                   # Enable interface
+      - exit                                          # Exit interface config
+      - ip default-gateway ${GATEWAY_IP}              # Set default gateway
+      - ip name-server ${DNS1} ${DNS2}                # Configure DNS
+      - username admin privilege 15 secret ${ADMIN_PASSWORD}  # Create admin user
+      - aaa new-model                                 # Enable AAA
+      - aaa authentication login default local        # Use local authentication
+      - crypto key generate rsa modulus 2048          # Generate SSH keys
+      - ip ssh version 2                              # Enable SSHv2 only
+      - ip ssh time-out 60                            # SSH timeout
+      - ip ssh authentication-retries 3               # SSH max retries
+      - no ip http server                             # Disable HTTP
+      - no ip http secure-server                      # Disable HTTPS (unless needed)
+      - line vty 0 15                                 # Configure VTY lines
+      - transport input ssh                           # SSH only
+      - exec-timeout 10 0                             # 10 minute timeout
+      - logging synchronous                           # Sync logging with CLI
+      - logging ${SYSLOG_SERVER}                      # Configure syslog
+      - service timestamps log datetime msec          # Timestamp logs
+      - service password-encryption                   # Encrypt passwords
+      - spanning-tree mode rapid-pvst                 # Enable Rapid PVST+
+      - spanning-tree portfast bpduguard default      # Enable BPDU guard
+      - end                                           # Exit config mode
+      - write memory                                  # Save configuration
+
+  performance_monitoring:
+    description: "Performance metrics and resource utilization monitoring"
+    last_updated: "2024-11-20"
+    commands:
+      - show processes cpu sorted      # CPU utilization by process
+      - show processes memory sorted   # Memory usage by process
+      - show memory                    # Total memory statistics
+      - show interfaces               # Detailed interface statistics
+      - show interfaces summary        # Interface summary
+      - show ip traffic                # IP protocol statistics
+      - show buffers                   # Buffer pool statistics
+      - show logging                   # Recent log messages
+      - show environment all           # All environmental sensors
+      - show power inline              # PoE power consumption (switches)
+
+  vlan_troubleshooting:
+    description: "VLAN connectivity and configuration troubleshooting (switches)"
+    last_updated: "2024-11-20"
+    commands:
+      - show vlan brief               # VLAN database overview
+      - show vlan                     # Detailed VLAN information
+      - show interfaces switchport    # Switchport mode and VLAN assignments
+      - show interfaces trunk         # Trunk port status
+      - show mac address-table        # MAC address learning
+      - show spanning-tree            # STP status all VLANs
+      - show spanning-tree summary    # STP summary
+      - show spanning-tree root       # STP root bridge per VLAN
+      - show etherchannel summary     # Port-channel/LACP status
+      - show cdp neighbors detail     # Connected devices
+
+  routing_troubleshooting:
+    description: "Routing table and protocol troubleshooting (routers)"
+    last_updated: "2024-11-20"
+    commands:
+      - show ip route                 # Full routing table
+      - show ip route summary         # Routing table summary
+      - show ip protocols             # Configured routing protocols
+      - show ip ospf neighbor         # OSPF neighbor relationships
+      - show ip ospf database         # OSPF link-state database
+      - show ip eigrp neighbors       # EIGRP neighbor relationships
+      - show ip eigrp topology        # EIGRP topology table
+      - show ip bgp summary           # BGP neighbor summary
+      - show ip arp                   # ARP table
+      - show ip nat translations      # NAT translation table
+
+  wireless_lan_controller:
+    description: "Wireless LAN Controller (WLC) monitoring and troubleshooting"
+    last_updated: "2024-11-20"
+    commands:
+      - show wlan summary             # WLAN configuration summary
+      - show ap summary               # Access point status
+      - show ap join stats summary all # AP join statistics
+      - show client summary           # Connected wireless clients
+      - show client detail            # Detailed client information
+      - show rf profile summary       # RF profile configuration
+      - show advanced 802.11a summary # 5GHz radio summary
+      - show advanced 802.11b summary # 2.4GHz radio summary
+
+common_commands:
+  show:
+    - show version                    # Device information
+    - show running-config             # Current configuration
+    - show startup-config             # Saved configuration
+    - show ip interface brief         # Interface status
+    - show interfaces                 # Detailed interface info
+    - show processes cpu              # CPU usage
+    - show memory                     # Memory usage
+    - show logging                    # System logs
+    - show users                      # Logged in users
+    - show ip route                   # Routing table
+    - show vlan brief                 # VLAN summary (switches)
+    - show cdp neighbors              # CDP neighbors
+    - show lldp neighbors             # LLDP neighbors
+    - show inventory                  # Hardware inventory
+    - show environment                # Environmental sensors
+
+  diagnostic:
+    - ping ${TARGET_IP}               # Test connectivity
+    - traceroute ${TARGET_IP}         # Trace network path
+    - show tech-support               # Comprehensive diagnostic output
+    - debug ip packet                 # Packet debugging (use carefully)
+    - debug ip icmp                   # ICMP debugging
+
+  configuration:
+    - configure terminal              # Enter configuration mode
+    - copy running-config startup-config  # Save configuration
+    - write memory                    # Save configuration (legacy)
+    - reload                          # Restart device (requires confirmation)
+    - erase startup-config            # Clear saved configuration (DANGER)
+
+notes:
+  pagination: |
+    Cisco IOS requires 'terminal length 0' to disable pagination.
+    IOS-XE Lite 16.10+ requires privileged EXEC mode (#) for this command.
+    Use 'terminal width 511' to prevent line wrapping.
+
+  privilege_escalation: |
+    User EXEC mode (>): Limited show commands only
+    Privileged EXEC mode (#): Full show commands and some config
+    Configuration mode (config)#: All configuration commands
+
+    Use 'enable' command to escalate from > to #
+    Use 'configure terminal' to enter configuration mode from #
+
+  authentication_methods: |
+    Cisco IOS supports three SSH authentication methods in this order:
+    1. Public key authentication (most secure, recommended for automation)
+    2. Keyboard-interactive authentication (supports TACACS+/RADIUS)
+    3. Password-based authentication (least secure but most common)
+
+  error_patterns: |
+    Common Cisco error messages to detect:
+    - "% Invalid input detected at '^' marker"
+    - "% Incomplete command"
+    - "% Ambiguous command"
+    - "% Unknown command or computer name, or unable to find computer address"
+    - "% Access denied"
+
+  safe_commands: |
+    All 'show' commands are read-only and safe for automation.
+    Commands like 'reload', 'write erase', 'no' commands require explicit user intent.
+    Always verify commands before execution in production environments.
