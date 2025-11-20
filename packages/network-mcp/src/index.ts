@@ -7,69 +7,26 @@ import {
   ListToolsRequestSchema,
   Tool,
 } from "@modelcontextprotocol/sdk/types.js";
-import { Client } from "ssh2";
+
+// Protocol abstraction layer
+import { ProtocolFactory, ProtocolType } from "./protocols/factory.js";
+import { DeviceProtocol } from "./protocols/base.js";
+import { DeviceCredentials } from "./types/credentials.js";
 
 // Environment configuration
 const DEFAULT_USERNAME = process.env.DEVICE_USERNAME || "admin";
 const DEFAULT_PASSWORD = process.env.DEVICE_PASSWORD;
-const DEFAULT_PORT = parseInt(process.env.DEVICE_PORT || "22", 10);
-const SSH_TIMEOUT = parseInt(process.env.SSH_TIMEOUT || "10000", 10);
-const VERIFY_HOST_KEY = process.env.SSH_VERIFY_HOST_KEY !== "false"; // Default to true
+const DEFAULT_PROTOCOL: ProtocolType = (process.env.DEFAULT_PROTOCOL as ProtocolType) || "ssh";
 
-// Command sanitization patterns
-const DANGEROUS_PATTERNS = [
-  /\b(rm|del|format|erase)\b/i, // Destructive commands (standalone)
-  /\bwrite\s+erase\b/i, // Write erase command
-  /&&|;|\||`|\$\(/, // Command chaining
-  /\.\.\//, // Path traversal
-  /<|>/, // Redirection
-];
-
-/**
- * Sanitize and validate commands before execution
- * Prevents command injection and dangerous operations
- */
-function sanitizeCommands(commands: string[]): string[] {
-  return commands.map((cmd) => {
-    // Check for dangerous patterns
-    for (const pattern of DANGEROUS_PATTERNS) {
-      if (pattern.test(cmd)) {
-        throw new Error(`Potentially dangerous command blocked: ${cmd}`);
-      }
-    }
-
-    // Trim whitespace
-    const sanitized = cmd.trim();
-
-    // Reject empty commands
-    if (sanitized.length === 0) {
-      throw new Error("Empty command not allowed");
-    }
-
-    // Reject commands longer than 1000 characters
-    if (sanitized.length > 1000) {
-      throw new Error("Command exceeds maximum length of 1000 characters");
-    }
-
-    return sanitized;
-  });
-}
-
-// Type definitions
-interface DeviceCredentials {
-  host: string;
-  port?: number;
-  username: string;
-  password?: string;
-  privateKey?: string;
-}
-
+// Type definitions for MCP responses
 interface CommandExecutionResult {
   device: string;
   commands: string[];
   output: string;
   error?: string;
   timestamp: string;
+  duration?: number;
+  protocol: string;
 }
 
 // Tool definitions
@@ -77,7 +34,7 @@ const TOOLS: Tool[] = [
   {
     name: "execute_commands",
     description:
-      "Execute a list of commands on a network device via SSH. Returns the combined output.",
+      "Execute a list of commands on a network device. Supports multiple protocols (SSH, HTTP API, WebSocket).",
     inputSchema: {
       type: "object",
       properties: {
@@ -90,17 +47,32 @@ const TOOLS: Tool[] = [
           items: { type: "string" },
           description: "Array of commands to execute",
         },
+        protocol: {
+          type: "string",
+          enum: ["ssh", "http", "websocket"],
+          description: `Protocol to use (optional, default: ${DEFAULT_PROTOCOL})`,
+        },
         username: {
           type: "string",
-          description: "SSH username (optional, uses DEVICE_USERNAME env var if not provided)",
+          description:
+            "Username for authentication (optional, uses DEVICE_USERNAME env var if not provided)",
         },
         password: {
           type: "string",
-          description: "SSH password (optional, uses DEVICE_PASSWORD env var if not provided)",
+          description:
+            "Password for authentication (optional, uses DEVICE_PASSWORD env var if not provided)",
+        },
+        privateKey: {
+          type: "string",
+          description: "SSH private key for authentication (optional, for SSH protocol)",
+        },
+        apiToken: {
+          type: "string",
+          description: "API token for authentication (optional, for HTTP protocol)",
         },
         port: {
           type: "number",
-          description: "SSH port (optional, default 22)",
+          description: "Connection port (optional, defaults based on protocol)",
         },
       },
       required: ["host", "commands"],
@@ -169,117 +141,144 @@ const TOOLS: Tool[] = [
   },
 ];
 
-// SSH Helper functions
-async function executeSSHCommands(
-  credentials: DeviceCredentials,
-  commands: string[]
-): Promise<string> {
-  // Sanitize commands before execution
-  const sanitizedCommands = sanitizeCommands(commands);
+/**
+ * Build device credentials from tool parameters
+ */
+function buildCredentials(args: {
+  host: string;
+  port?: number;
+  username?: string;
+  password?: string;
+  privateKey?: string;
+  apiToken?: string;
+}): DeviceCredentials {
+  const host = args.host;
+  const port = args.port;
+  const username = args.username || DEFAULT_USERNAME;
 
-  return new Promise((resolve, reject) => {
-    const conn = new Client();
-    let output = "";
-    let connectionClosed = false;
+  // Determine credential type based on provided parameters
+  if (args.apiToken) {
+    return {
+      type: "api_token",
+      host,
+      port,
+      token: args.apiToken,
+      tokenType: "bearer",
+    };
+  }
 
-    conn
-      .on("ready", () => {
-        // Execute commands in a single shell session
-        conn.shell((err, stream) => {
-          if (err) {
-            conn.end();
-            reject(err);
-            return;
-          }
+  if (args.privateKey) {
+    return {
+      type: "private_key",
+      host,
+      port,
+      username,
+      privateKey: args.privateKey,
+    };
+  }
 
-          stream
-            .on("close", () => {
-              connectionClosed = true;
-              conn.end();
-              resolve(output);
-            })
-            .on("data", (data: Buffer) => {
-              output += data.toString();
-            });
+  if (args.password || DEFAULT_PASSWORD) {
+    return {
+      type: "password",
+      host,
+      port,
+      username,
+      password: args.password || DEFAULT_PASSWORD || "",
+    };
+  }
 
-          // Send sanitized commands
-          sanitizedCommands.forEach((cmd) => {
-            stream.write(`${cmd}\n`);
-          });
-
-          // Exit shell
-          setTimeout(() => {
-            if (!connectionClosed) {
-              stream.end("exit\n");
-            }
-          }, 1000);
-        });
-      })
-      .on("error", (err) => {
-        connectionClosed = true;
-        // Sanitize error messages to prevent credential leaks
-        const safeMessage = err.message.replace(/(password|key)[=:]\s*\S+/gi, "$1=***");
-        reject(new Error(safeMessage));
-      })
-      .connect({
-        host: credentials.host,
-        port: credentials.port || DEFAULT_PORT,
-        username: credentials.username,
-        password: credentials.password,
-        privateKey: credentials.privateKey,
-        readyTimeout: SSH_TIMEOUT,
-        // Host key verification
-        hostVerifier: VERIFY_HOST_KEY ? undefined : (): boolean => true, // If verification disabled, accept all
-      });
-
-    // Timeout fallback
-    setTimeout(() => {
-      if (!connectionClosed) {
-        conn.end();
-        reject(new Error(`SSH connection timeout after ${SSH_TIMEOUT}ms`));
-      }
-    }, SSH_TIMEOUT + 5000);
-  });
+  // Default to SSH agent if no other credentials provided
+  return {
+    type: "ssh_agent",
+    host,
+    port,
+    username,
+  };
 }
 
+/**
+ * Execute commands on a single device using protocol abstraction
+ */
 async function executeSingleDevice(
   host: string,
   commands: string[],
-  username?: string,
-  password?: string
+  protocolType: ProtocolType = DEFAULT_PROTOCOL,
+  credentialArgs: {
+    username?: string;
+    password?: string;
+    privateKey?: string;
+    apiToken?: string;
+    port?: number;
+  } = {}
 ): Promise<CommandExecutionResult> {
-  const credentials: DeviceCredentials = {
-    host,
-    username: username || DEFAULT_USERNAME,
-    password: password || DEFAULT_PASSWORD,
-  };
+  let protocol: DeviceProtocol | undefined;
 
   try {
-    const output = await executeSSHCommands(credentials, commands);
+    // Create protocol instance
+    protocol = ProtocolFactory.create(protocolType);
+
+    // Build credentials
+    const credentials = buildCredentials({
+      host,
+      ...credentialArgs,
+    });
+
+    // Connect to device
+    await protocol.connect(credentials);
+
+    // Execute commands
+    const result = await protocol.execute(commands);
+
+    // Disconnect
+    await protocol.disconnect();
+
     return {
       device: host,
       commands,
-      output,
-      timestamp: new Date().toISOString(),
+      output: result.output,
+      timestamp: result.timestamp,
+      duration: result.duration,
+      protocol: protocolType,
     };
   } catch (error) {
+    // Ensure disconnection on error
+    if (protocol) {
+      try {
+        await protocol.disconnect();
+      } catch {
+        // Ignore disconnect errors
+      }
+    }
+
     return {
       device: host,
       commands,
       output: "",
       error: error instanceof Error ? error.message : String(error),
       timestamp: new Date().toISOString(),
+      protocol: protocolType,
     };
   }
 }
 
+/**
+ * Execute commands on multiple devices in parallel
+ */
 async function executeBatchDevices(
   hosts: string[],
   commands: string[],
-  username?: string,
-  password?: string
+  protocolType: ProtocolType = DEFAULT_PROTOCOL,
+  credentialArgs: {
+    username?: string;
+    password?: string;
+    privateKey?: string;
+    apiToken?: string;
+    port?: number;
+  } = {}
 ): Promise<CommandExecutionResult[]> {
-  const executions = hosts.map((host) => executeSingleDevice(host, commands, username, password));
+  const executions = hosts.map((host) =>
+    executeSingleDevice(host, commands, protocolType, credentialArgs)
+  );
   return Promise.all(executions);
 }
 
@@ -311,14 +310,32 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "execute_commands": {
         const host = args?.host as string;
         const commands = args?.commands as string[];
+        const protocol = (args?.protocol as ProtocolType) || DEFAULT_PROTOCOL;
         const username = args?.username as string | undefined;
         const password = args?.password as string | undefined;
+        const privateKey = args?.privateKey as string | undefined;
+        const apiToken = args?.apiToken as string | undefined;
+        const port = args?.port as number | undefined;
 
         if (!host || !commands || commands.length === 0) {
           throw new Error("host and commands parameters are required");
         }
 
-        const result = await executeSingleDevice(host, commands, username, password);
+        // Validate protocol
+        if (!ProtocolFactory.isSupported(protocol)) {
+          const protocolStr = String(protocol);
+          throw new Error(
+            `Unsupported protocol: ${protocolStr}. Supported: ${ProtocolFactory.getSupportedProtocols().join(", ")}`
+          );
+        }
+
+        const result = await executeSingleDevice(host, commands, protocol, {
+          username,
+          password,
+          privateKey,
+          apiToken,
+          port,
+        });
 
         return {
           content: [
@@ -362,14 +379,32 @@ server.setRequestHandler(CallToolRequestSchema, async (request) => {
       case "batch_execute": {
         const hosts = args?.hosts as string[];
         const commands = args?.commands as string[];
+        const protocol = (args?.protocol as ProtocolType) || DEFAULT_PROTOCOL;
         const username = args?.username as string | undefined;
         const password = args?.password as string | undefined;
+        const privateKey = args?.privateKey as string | undefined;
+        const apiToken = args?.apiToken as string | undefined;
+        const port = args?.port as number | undefined;
 
         if (!hosts || !commands || hosts.length === 0 || commands.length === 0) {
           throw new Error("hosts and commands parameters are required");
         }
 
-        const results = await executeBatchDevices(hosts, commands, username, password);
+        // Validate protocol
+        if (!ProtocolFactory.isSupported(protocol)) {
+          const protocolStr = String(protocol);
+          throw new Error(
+            `Unsupported protocol: ${protocolStr}. Supported: ${ProtocolFactory.getSupportedProtocols().join(", ")}`
+          );
+        }
+
+        const results = await executeBatchDevices(hosts, commands, protocol, {
+          username,
+          password,
+          privateKey,
+          apiToken,
+          port,
+        });
 
         return {
           content: [
