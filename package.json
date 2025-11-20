@@ -16,7 +16,7 @@
     "format": "prettier --write \"packages/**/src/**/*.ts\"",
     "format:check": "prettier --check \"packages/**/src/**/*.ts\"",
     "clean": "npm run clean --workspaces --if-present && rm -rf node_modules",
-    "prepare": "husky"
+    "prepare": "husky || true"
   },
   "lint-staged": {
     "packages/**/src/**/*.ts": [
