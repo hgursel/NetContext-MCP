@@ -59,3 +59,9 @@ examples/*config*.json.local
 NOTES.md
 TODO.md
 *.private.md
+claudedocs/
+
+# Claude Code configuration
+.claude/
+
+docs/

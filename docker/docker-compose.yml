@@ -1,0 +1,54 @@
+services:
+  # SSH Test Server - Password Authentication
+  ssh-test-password:
+    build:
+      context: ./test-ssh-server
+      dockerfile: Dockerfile
+    container_name: netcontext-ssh-password
+    hostname: test-device-password
+    ports:
+      - "2222:22"
+    networks:
+      netcontext-test:
+        ipv4_address: 172.25.0.10
+    environment:
+      - SSH_USER=netadmin
+      - SSH_PASS=testpass123
+    restart: unless-stopped
+
+  # SSH Test Server - Key Authentication
+  ssh-test-key:
+    build:
+      context: ./test-ssh-server
+      dockerfile: Dockerfile
+    container_name: netcontext-ssh-key
+    hostname: test-device-key
+    ports:
+      - "2223:22"
+    networks:
+      netcontext-test:
+        ipv4_address: 172.25.0.11
+    volumes:
+      - ./test-ssh-server/keys/test_key.pub:/home/netadmin/.ssh/authorized_keys:ro
+    restart: unless-stopped
+
+  # Mock UniFi Controller (for future HTTP API testing)
+  # unifi-mock:
+  #   image: nginx:alpine
+  #   container_name: netcontext-unifi-mock
+  #   hostname: unifi-controller
+  #   ports:
+  #     - "8443:443"
+  #   networks:
+  #     netcontext-test:
+  #       ipv4_address: 172.25.0.20
+  #   volumes:
+  #     - ./mock-unifi/nginx.conf:/etc/nginx/nginx.conf:ro
+  #   restart: unless-stopped
+
+networks:
+  netcontext-test:
+    driver: bridge
+    ipam:
+      config:
+        - subnet: 172.25.0.0/24
